@@ -1,0 +1,30 @@
+{
+  "name": "strawpoll",
+  "reason": {
+    "react-jsx": 2
+  },
+  "bs-dependencies": [
+    "reason-react",
+    "reason-reroute",
+    "bs-fetch",
+    "@glennsl/bs-json"
+  ],
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": [
+    {
+      "module": "commonjs",
+      "in-source": true
+    }
+  ],
+  "refmt": 3,
+  "suffix": ".bs.js", /* use this instead of .bs.js, reason-scripts relies on .js */
+  "bsc-flags": [
+    "-bs-no-version-header",
+    "-bs-super-errors"
+  ]
+}
