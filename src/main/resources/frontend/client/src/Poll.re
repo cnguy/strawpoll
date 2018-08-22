@@ -25,11 +25,20 @@ let make = (~id: int, ~showResults: bool=false, _children) => {
     },
   render: self =>
     switch (self.state.poll) {
-    | Some(poll) =>
+    | Some((poll: poll)) =>
       if (showResults) {
-        ReasonReact.string(
-          "Showing results for poll: " ++ string_of_int(poll.id),
-        );
+        let answers =
+          poll.answers
+          |> List.map((answer: answer) =>
+               <li>
+                 {ReasonReact.string(answer.response ++ ": ")}
+                 {ReasonReact.string(string_of_int(answer.count))}
+               </li>
+             );
+        <>
+          {ReasonReact.string(poll.question)}
+          <ul> {ReasonReact.array(Array.of_list(answers))} </ul>
+        </>;
       } else {
         ReasonReact.string(
           "Showing actual poll for poll: " ++ string_of_int(poll.id),
