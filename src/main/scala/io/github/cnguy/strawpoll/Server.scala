@@ -30,8 +30,8 @@ object Server extends StreamApp[IO] {
       exitCode <- BlazeBuilder[F]
         .bindHttp(8080, "localhost")
         .mountService(IndexEndpoint.endpoints[F](), "/")
-        .mountService(AnswerEndpoints.endpoints[F](answerService), "/")
-        .mountService(PollEndpoints.endpoints[F](pollService), "/")
+        .mountService(AnswerEndpoints.endpoints[F](answerService), "/api")
+        .mountService(PollEndpoints.endpoints[F](pollService), "/api")
         .serve
     } yield exitCode
 }

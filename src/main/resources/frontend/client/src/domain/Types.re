@@ -16,6 +16,11 @@ type answer = {
   count: int,
 };
 
+type answerStub = {
+  fieldId: int,
+  response: string,
+};
+
 type poll = {
   id: int,
   question: string,
