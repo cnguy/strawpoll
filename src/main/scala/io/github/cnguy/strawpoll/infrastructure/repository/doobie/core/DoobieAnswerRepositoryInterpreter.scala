@@ -9,20 +9,20 @@ import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerRepositoryAlgebra
 
 private object AnswerSQL {
   def select(answerId: Long): Query0[Answer] = sql"""
-    SELECT POLL_ID, RESPONSE, COUNT, ID
+    SELECT POLL_ID, RESPONSE, RANK, COUNT, ID
     FROM ANSWERS
     WHERE ID = $answerId
   """.query[Answer]
 
   def selectByPoll(pollId: Long): Query0[Answer] = sql"""
-    SELECT POLL_ID, RESPONSE, COUNT, ID
+    SELECT POLL_ID, RESPONSE, RANK, COUNT, ID
     FROM ANSWERS
     WHERE POLL_ID = $pollId
   """.query[Answer]
 
   def insert(answer: Answer): Update0 = sql"""
-    INSERT INTO ANSWERS (POLL_ID, RESPONSE, COUNT)
-    VALUES (${answer.pollId}, ${answer.response}, 0)
+    INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT)
+    VALUES (${answer.pollId}, ${answer.response}, ${answer.rank}, 0)
   """.update
 
   def vote(answerId: Long): Update0 = sql"""

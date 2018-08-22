@@ -40,9 +40,19 @@ let make = (~id: int, ~showResults: bool=false, _children) => {
           <ul> {ReasonReact.array(Array.of_list(answers))} </ul>
         </>;
       } else {
-        ReasonReact.string(
-          "Showing actual poll for poll: " ++ string_of_int(poll.id),
-        );
+        let answers =
+          poll.answers
+          |> List.sort((a, b) => a.rank - b.rank)
+          |> List.map((answer: answer) =>
+               <li>
+                 {ReasonReact.string(answer.response ++ ": ")}
+                 {ReasonReact.string(string_of_int(answer.count))}
+               </li>
+             );
+        <>
+          {ReasonReact.string("Vote on: " ++ poll.question)}
+          <ul> {ReasonReact.array(Array.of_list(answers))} </ul>
+        </>;
       }
     | None => ReasonReact.string("Poll not found.")
     },

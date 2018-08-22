@@ -3,7 +3,9 @@ open Types;
 let rawAnswersToAnswers = (rawAnswers: list(rawAnswer)) => {
   let answers =
     rawAnswers
-    |> List.map(({id, response, count}: rawAnswer) => {id, response, count});
+    |> List.map(({id, rank, response, count}: rawAnswer) =>
+         {id, rank, response, count}
+       );
   Some(answers);
 };
 
@@ -58,12 +60,18 @@ let makeAnswers = (pollId: int, answers: list(answerStub)) =>
   /* The Scala backend should handle batch creation. This is just temporary stuff, since I'm lazy. */
   /* Note that this makes a request PER answer. Obvious trash is trash. */
   answers
+  |> List.filter(answer => String.length(answer.response) > 0)
   |> List.map(answer => {
        let answerPayload = Js.Dict.empty();
        Js.Dict.set(
          answerPayload,
          "pollId",
          Js.Json.number(float_of_int(pollId)),
+       );
+       Js.Dict.set(
+         answerPayload,
+         "rank",
+         Js.Json.number(float_of_int(answer.fieldId)),
        );
        Js.Dict.set(
          answerPayload,

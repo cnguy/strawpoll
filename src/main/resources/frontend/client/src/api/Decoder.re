@@ -5,6 +5,7 @@ let answer = json =>
     id: json |> field("id", int),
     pollId: json |> field("pollId", int),
     response: json |> field("response", string),
+    rank: json |> field("rank", int),
     count: json |> field("count", int),
   };
 

@@ -2,6 +2,7 @@ type rawAnswer = {
   id: int,
   pollId: int,
   response: string,
+  rank: int,
   count: int,
 };
 
@@ -13,6 +14,7 @@ type rawPoll = {
 type answer = {
   id: int,
   response: string,
+  rank: int,
   count: int,
 };
 

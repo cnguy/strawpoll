@@ -46,7 +46,7 @@ let make = _children => {
           |> List.append(toAppend)
           |> List.sort((a, b) => a.fieldId - b.fieldId) /* ReasonReact doesn't respect List.append order. */
       });
-    | AddAnswer((answer: answerStub)) =>
+    | AddAnswer(answer) =>
       ReasonReact.Update({
         ...state,
         answerStubs: state.answerStubs |> List.append([answer]),

@@ -12,6 +12,21 @@ Reason is not yet mature enough to attract beginners for its backend usage. Howe
 
 [Frontend Src](https://github.com/cnguy/strawpoll/tree/master/src/main/resources/frontend)
 
+## TODO
+
+Doing it pretty much from top to bottom.
+
+- [ ] UI
+  - [ ] New Poll
+  - [ ] Vote
+  - [ ] Results
+- [ ] Duplicate Votes Checker
+  - [ ] IP Addr. Checking
+  - [ ] Browser Cookie Checking
+- [ ] Auth
+- [ ] Public vs Private Polls
+  - [ ] Allow Public Polls to be in a "Trending" section. That'd be cool
+
 ## Architecture
 
 Backend:
