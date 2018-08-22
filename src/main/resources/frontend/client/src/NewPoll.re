@@ -2,7 +2,7 @@ open Types;
 
 type state = {
   question: string,
-  answers: list(answerStub),
+  answerStubs: list(answerStub),
 };
 
 type action =
@@ -18,43 +18,66 @@ let make = _children => {
   ...component,
   initialState: () => {
     question: "",
-    answers: [{fieldId: 0, response: ""}, {fieldId: 1, response: ""}],
+    answerStubs: [{fieldId: 0, response: ""}, {fieldId: 1, response: ""}],
   },
   reducer: (action, state) =>
     switch (action) {
     | SetQuestion(text) => ReasonReact.Update({...state, question: text})
     | ChangeAnswer(fieldId, text) =>
       let result =
-        state.answers
+        state.answerStubs
         |> List.map((answer: answerStub) =>
              answer.fieldId === fieldId ? {fieldId, response: text} : answer
            );
-      ReasonReact.Update({...state, answers: result});
-    | AddAnswer(answer) => NoUpdate
-    | RemoveAnswer(answerId) => NoUpdate
+      let toAppend =
+        if (List.length(state.answerStubs) - 1 === fieldId) {
+          let toBeAppended = {
+            fieldId: List.length(state.answerStubs),
+            response: "",
+          };
+          [toBeAppended];
+        } else {
+          [];
+        };
+      ReasonReact.Update({
+        ...state,
+        answerStubs:
+          result
+          |> List.append(toAppend)
+          |> List.sort((a, b) => a.fieldId - b.fieldId) /* ReasonReact doesn't respect List.append order. */
+      });
+    | AddAnswer((answer: answerStub)) =>
+      ReasonReact.Update({
+        ...state,
+        answerStubs: state.answerStubs |> List.append([answer]),
+      })
+    | RemoveAnswer(_answerId) => NoUpdate
     | SubmitPoll =>
       Js.log(state);
-      PollService.makePoll({question: state.question}, state.answers);
+      PollService.makePoll({question: state.question}, state.answerStubs)
+      |> ignore;
       NoUpdate;
     },
   render: self => {
     let answerFields =
-      self.state.answers
+      self.state.answerStubs
       |> List.map(answer =>
-           <input
-             key={string_of_int(answer.fieldId)}
-             onChange={
-               event =>
-                 self.send(
-                   ChangeAnswer(
-                     answer.fieldId,
-                     event->ReactEvent.Form.target##value,
-                   ),
-                 )
-             }
-             value={answer.response}
-             placeholder="Enter Poll Option"
-           />
+           <div key={string_of_int(answer.fieldId)}>
+             <input
+               key={string_of_int(answer.fieldId)}
+               onChange={
+                 event =>
+                   self.send(
+                     ChangeAnswer(
+                       answer.fieldId,
+                       event->ReactEvent.Form.target##value,
+                     ),
+                   )
+               }
+               value={answer.response}
+               placeholder="Enter Poll Option"
+             />
+           </div>
          )
       |> Array.of_list
       |> ReasonReact.array;
@@ -67,6 +90,7 @@ let make = _children => {
         value={self.state.question}
         placeholder="Type your question here"
       />
+      <br />
       answerFields
       <button onClick={_event => self.send(SubmitPoll)}>
         {ReasonReact.string("Submit")}
