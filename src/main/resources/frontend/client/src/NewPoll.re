@@ -34,6 +34,7 @@ let make = _children => {
     | RemoveAnswer(answerId) => NoUpdate
     | SubmitPoll =>
       Js.log(state);
+      PollService.makePoll({question: state.question}, state.answers);
       NoUpdate;
     },
   render: self => {

@@ -53,3 +53,24 @@ let getPoll = (id: int, callback: option(poll) => unit): unit => {
   |> ignore;
   ();
 };
+
+let makeAnswer = ();
+let makePoll = (poll: pollStub, answers: list(answerStub)) => {
+  let pollPayload = Js.Dict.empty();
+  Js.Dict.set(pollPayload, "question", Js.Json.string(poll.question));
+  Js.Promise.(
+    Fetch.fetchWithInit(
+      "/api/polls",
+      Fetch.RequestInit.make(
+        ~method_=Post,
+        ~body=
+          Fetch.BodyInit.make(
+            Js.Json.stringify(Js.Json.object_(pollPayload)),
+          ),
+        ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+        (),
+      ),
+    )
+    |> then_(Fetch.Response.json)
+  );
+};
