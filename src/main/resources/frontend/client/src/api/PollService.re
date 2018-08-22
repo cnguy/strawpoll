@@ -54,7 +54,42 @@ let getPoll = (id: int, callback: option(poll) => unit): unit => {
   ();
 };
 
-let makeAnswer = ();
+let makeAnswers = (pollId: int, answers: list(answerStub)) =>
+  /* The Scala backend should handle batch creation. This is just temporary stuff, since I'm lazy. */
+  /* Note that this makes a request PER answer. Obvious trash is trash. */
+  answers
+  |> List.map(answer => {
+       let answerPayload = Js.Dict.empty();
+       Js.Dict.set(
+         answerPayload,
+         "pollId",
+         Js.Json.number(float_of_int(pollId)),
+       );
+       Js.Dict.set(
+         answerPayload,
+         "response",
+         Js.Json.string(answer.response),
+       );
+       /* Necessary for API to not break. All fields are required. */
+       Js.Dict.set(answerPayload, "count", Js.Json.number(0.));
+       Js.Promise.(
+         Fetch.fetchWithInit(
+           "/api/answers",
+           Fetch.RequestInit.make(
+             ~method_=Post,
+             ~body=
+               Fetch.BodyInit.make(
+                 Js.Json.stringify(Js.Json.object_(answerPayload)),
+               ),
+             ~headers=
+               Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+             (),
+           ),
+         )
+         |> then_(Fetch.Response.json)
+       );
+     });
+
 let makePoll = (poll: pollStub, answers: list(answerStub)) => {
   let pollPayload = Js.Dict.empty();
   Js.Dict.set(pollPayload, "question", Js.Json.string(poll.question));
@@ -72,5 +107,9 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
       ),
     )
     |> then_(Fetch.Response.json)
+    |> then_(json => {
+         let poll = json |> Decoder.poll;
+         makeAnswers(poll.id, answers) |> resolve;
+       })
   );
 };
