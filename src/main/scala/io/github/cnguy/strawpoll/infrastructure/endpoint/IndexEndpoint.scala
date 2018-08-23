@@ -17,20 +17,13 @@ class IndexEndpoint[F[_]: Effect] extends Http4sDsl[F] {
             new File(getClass.getClassLoader.getResource("frontend/client/src/index.html").getPath),
             Some(request))
           .getOrElseF(NotFound())
-      case request @ GET -> Root / "poll" / "new" =>
-        StaticFile
-          .fromFile(
-              new File(getClass.getClassLoader.getResource("frontend/client/src/index.html").getPath),
-              Some(request)
-            )
-          .getOrElseF(NotFound())
-      case request @ GET -> Root / "poll" / LongVar(_) =>
+      case request @ GET -> Root / "p" / LongVar(_) =>
         StaticFile
           .fromFile(
             new File(getClass.getClassLoader.getResource("frontend/client/src/index.html").getPath),
             Some(request))
           .getOrElseF(NotFound())
-      case request @ GET -> Root / "results" / LongVar(_) =>
+      case request @ GET -> Root / "r" / LongVar(_) =>
         StaticFile
           .fromFile(
             new File(getClass.getClassLoader.getResource("frontend/client/src/index.html").getPath),
