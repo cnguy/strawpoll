@@ -17,8 +17,8 @@ class AnswerService[F[_]](answerRepo: AnswerRepositoryAlgebra[F]) {
   def list(pollId: Long): F[List[Answer]] =
     answerRepo.list(pollId)
 
-  def vote(id: Long)(implicit M: Monad[F]): F[Unit] =
-    answerRepo.vote(id).as(())
+  def vote(id: Long): F[Option[Answer]] =
+    answerRepo.vote(id)
 
   def delete(id: Long)(implicit M: Monad[F]): F[Unit] =
     answerRepo.delete(id).as(())

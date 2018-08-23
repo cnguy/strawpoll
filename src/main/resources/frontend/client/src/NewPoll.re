@@ -64,7 +64,6 @@ let make = _children => {
       |> List.map(answer =>
            <div key={string_of_int(answer.fieldId)}>
              <input
-               key={string_of_int(answer.fieldId)}
                onChange={
                  event =>
                    self.send(

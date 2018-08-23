@@ -35,7 +35,7 @@ let make = _children => {
              switch (currentRoute) {
              | RouterConfig.NewPoll => <NewPoll />
              | RouterConfig.Poll(id) => <Poll id />
-             | RouterConfig.PollResults(id) => <Poll id showResults=true />
+             | RouterConfig.PollResults(id) => <PollResults id />
              | RouterConfig.NotFound => ReasonReact.string("NotFound")
              }
          }

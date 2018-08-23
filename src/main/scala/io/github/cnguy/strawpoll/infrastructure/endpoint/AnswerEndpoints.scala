@@ -48,8 +48,11 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
     HttpService[F] {
       case PUT -> Root / "answers" / LongVar(id) =>
         for {
-          _ <- answerService.vote(id)
-          resp <- Ok()
+          answer <- answerService.vote(id)
+          resp <- answer match {
+            case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
+            case None => NotFound()
+          }
         } yield resp
     }
 

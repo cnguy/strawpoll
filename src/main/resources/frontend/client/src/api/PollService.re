@@ -121,3 +121,16 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
        })
   );
 };
+
+let vote = (answerId: int) =>
+  Js.Promise.(
+    Fetch.fetchWithInit(
+      "/api/answers/" ++ string_of_int(answerId),
+      Fetch.RequestInit.make(
+        ~method_=Put,
+        ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+        (),
+      ),
+    )
+    |> then_(Fetch.Response.json)
+  );
