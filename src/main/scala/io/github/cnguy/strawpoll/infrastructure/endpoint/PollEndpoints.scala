@@ -8,19 +8,23 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import io.github.cnguy.strawpoll.domain.PollNotFoundError
+import io.github.cnguy.strawpoll.domain.answers.{Answer}
 import io.github.cnguy.strawpoll.domain.polls.{Poll, PollService}
+
+case class PollRequest(poll: Poll, answers: List[Answer])
 
 class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   import cats.implicits._
 
+  implicit val pollRequestDecoder = jsonOf[F, PollRequest]
   implicit val pollDecoder = jsonOf[F, Poll]
 
   def createPollEndpoint(pollService: PollService[F]): HttpService[F] =
     HttpService[F] {
       case req @ POST -> Root / "polls" => {
         for {
-          poll <- req.as[Poll]
-          saved <- pollService.createPoll(poll)
+          pollRequest <- req.as[PollRequest]
+          saved <- pollService.createPoll(pollRequest.poll, pollRequest.answers)
           resp <- Ok(saved.asJson)
         } yield resp
       }

@@ -26,7 +26,7 @@ object Server extends StreamApp[IO] {
       answerRepo = DoobieAnswerRepositoryInterpreter[F](xa)
       pollRepo = DoobiePollRepositoryInterpreter[F](xa)
       answerService = AnswerService[F](answerRepo)
-      pollService = PollService[F](pollRepo)
+      pollService = PollService[F](pollRepo, answerRepo)
       exitCode <- BlazeBuilder[F]
         .bindHttp(8080, "localhost")
         .mountService(IndexEndpoint.endpoints[F](), "/")

@@ -4,11 +4,16 @@ import scala.language.higherKinds
 import cats.Monad
 import cats.data.EitherT
 import io.github.cnguy.strawpoll.domain.PollNotFoundError
+import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerRepositoryAlgebra}
 
-class PollService[F[_]](pollRepo: PollRepositoryAlgebra[F]) {
+class PollService[F[_]](pollRepo: PollRepositoryAlgebra[F], answerRepo: AnswerRepositoryAlgebra[F]) {
   import cats.syntax.all._
 
-  def createPoll(poll: Poll): F[Poll] = pollRepo.create(poll)
+  def createPoll(poll: Poll, answers: List[Answer]): F[Poll] = {
+    val saved = pollRepo.create(poll)
+    val _ = answerRepo.createBatch(answers)
+    saved
+  }
 
   def get(id: Long)(implicit M: Monad[F]): EitherT[F, PollNotFoundError.type, Poll] =
     EitherT.fromOptionF(pollRepo.get(id), PollNotFoundError)
@@ -18,6 +23,6 @@ class PollService[F[_]](pollRepo: PollRepositoryAlgebra[F]) {
 }
 
 object PollService {
-  def apply[F[_]](pollRepo: PollRepositoryAlgebra[F]): PollService[F] =
-    new PollService(pollRepo)
+  def apply[F[_]](pollRepo: PollRepositoryAlgebra[F], answerRepo: AnswerRepositoryAlgebra[F]): PollService[F] =
+    new PollService(pollRepo, answerRepo)
 }

@@ -25,6 +25,15 @@ private object AnswerSQL {
     VALUES (${answer.pollId}, ${answer.response}, ${answer.rank}, 0)
   """.update
 
+  def insertMany: String = {
+    """
+      INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT)
+      VALUES (?, ?, ?, 0)
+    """
+    /// Update[Answer](sql).updateMany(answers)
+    // Update[Answer](sql).updateManyWithGeneratedKeys(answers)
+  }
+
   def vote(answerId: Long): Update0 = sql"""
     UPDATE ANSWERS
     SET COUNT = COUNT + 1
@@ -46,6 +55,13 @@ class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
       .withUniqueGeneratedKeys[Long]("ID")
       .map(id => answer.copy(id = id.some))
       .transact(xa)
+
+  def createBatch(answers: List[Answer]) =
+      Update[Answer](AnswerSQL.insertMany)
+        .updateManyWithGeneratedKeys[Answer]("ID")(answers)
+        .transact(xa)
+/*        .updateManyWithGeneratedKeys(answers)
+          .transact(xa) */
 
   def get(answerId: Long): F[Option[Answer]] =
     AnswerSQL.select(answerId).option.transact(xa)

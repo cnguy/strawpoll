@@ -11,6 +11,8 @@ class AnswerService[F[_]](answerRepo: AnswerRepositoryAlgebra[F]) {
 
   def createAnswer(answer: Answer): F[Answer] = answerRepo.create(answer)
 
+  def createBatch(answers: List[Answer]) = answerRepo.createBatch(answers)
+
   def get(id: Long)(implicit M: Monad[F]): EitherT[F, AnswerNotFoundError.type, Answer] =
     EitherT.fromOptionF(answerRepo.get(id), AnswerNotFoundError)
 

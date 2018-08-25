@@ -100,7 +100,16 @@ let makeAnswers = (pollId: int, answers: list(answerStub)) =>
 
 let makePoll = (poll: pollStub, answers: list(answerStub)) => {
   let pollPayload = Js.Dict.empty();
+  let answerPayload = Js.Dict.empty();
   Js.Dict.set(pollPayload, "question", Js.Json.string(poll.question));
+  Js.Dict.set(
+    pollPayload,
+    "answers",
+    Encoder.answerStubs(
+      poll.id,
+      answers |> List.filter(answer => String.length(answer.response) > 0),
+    ),
+  );
   Js.Promise.(
     Fetch.fetchWithInit(
       "/api/polls",
@@ -115,10 +124,11 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
       ),
     )
     |> then_(Fetch.Response.json)
-    |> then_(json => {
-         let poll = json |> Decoder.poll;
-         makeAnswers(poll.id, answers) |> resolve;
-       })
+    |> then_(json
+         /*
+          let poll = json |> Decoder.poll;
+          makeAnswers(poll.id, answers) |> resolve;*/
+         => Js.log |> resolve)
   );
 };
 
