@@ -10,8 +10,17 @@ let component = ReasonReact.reducerComponent("PollResults");
 let make = (~id: int, _children) => {
   ...component,
   initialState: () => {poll: None},
-  didMount: self =>
-    PollService.getPoll(id, maybePoll => self.send(SetPoll(maybePoll))),
+  didMount: self => {
+    let intervalID =
+      Js.Global.setInterval(
+        () =>
+          PollService.getPoll(id, maybePoll =>
+            self.send(SetPoll(maybePoll))
+          ),
+        2000,
+      );
+    self.onUnmount(() => Js.Global.clearInterval(intervalID));
+  },
   reducer: (action, state) =>
     switch (action) {
     | SetPoll(poll) => ReasonReact.Update({...state, poll})
