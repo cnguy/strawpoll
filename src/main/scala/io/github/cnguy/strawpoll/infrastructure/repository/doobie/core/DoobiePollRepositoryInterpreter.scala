@@ -6,6 +6,7 @@ import cats.implicits._
 import doobie._
 import doobie.implicits._
 import io.github.cnguy.strawpoll.domain.polls.{Poll, PollRepositoryAlgebra}
+import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerRepositoryAlgebra, AnswerWithNoPollId}
 
 private object PollSQL {
   def select(pollId: Long): Query0[Poll] = sql"""
@@ -25,15 +26,23 @@ private object PollSQL {
   """.update
 }
 
-class DoobiePollRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
+class DoobiePollRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F], answerRepo: AnswerRepositoryAlgebra[F])
     extends PollRepositoryAlgebra[F] {
 
-  def create(poll: Poll): F[Poll] =
+  def create(poll: Poll, answers: List[AnswerWithNoPollId]): F[Poll] = {
     PollSQL
       .insert(poll)
       .withUniqueGeneratedKeys[Long]("ID")
-      .map(id => poll.copy(id = id.some))
+      .map(id => {
+        val newId = id.some
+        val newPoll = poll.copy(id = newId)
+        val as = answers.map(answer => Answer(id, answer.response, answer.rank, answer.count))
+        val sql = "INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT) VALUES (?, ?, ?, ?)"
+        Update[Answer](sql).updateMany(as).transact(xa).unsa
+        newPoll
+      })
       .transact(xa)
+  }
 
   def get(pollId: Long): F[Option[Poll]] =
     PollSQL.select(pollId).option.transact(xa)
@@ -43,6 +52,6 @@ class DoobiePollRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
 }
 
 object DoobiePollRepositoryInterpreter {
-  def apply[F[_]: Monad](xa: Transactor[F]): DoobiePollRepositoryInterpreter[F] =
-    new DoobiePollRepositoryInterpreter[F](xa)
+  def apply[F[_]: Monad](xa: Transactor[F], answerRepo: AnswerRepositoryAlgebra[F]): DoobiePollRepositoryInterpreter[F] =
+    new DoobiePollRepositoryInterpreter[F](xa, answerRepo)
 }

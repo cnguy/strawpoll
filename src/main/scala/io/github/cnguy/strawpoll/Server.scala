@@ -24,7 +24,7 @@ object Server extends StreamApp[IO] {
       xa <- Stream.eval(DatabaseConfig.dbTransactor(conf.db))
       _ <- Stream.eval(DatabaseConfig.initializeDb(conf.db, xa))
       answerRepo = DoobieAnswerRepositoryInterpreter[F](xa)
-      pollRepo = DoobiePollRepositoryInterpreter[F](xa)
+      pollRepo = DoobiePollRepositoryInterpreter[F](xa, answerRepo)
       answerService = AnswerService[F](answerRepo)
       pollService = PollService[F](pollRepo, answerRepo)
       exitCode <- BlazeBuilder[F]

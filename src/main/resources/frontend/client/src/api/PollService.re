@@ -106,7 +106,6 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
     pollPayload,
     "answers",
     Encoder.answerStubs(
-      poll.id,
       answers |> List.filter(answer => String.length(answer.response) > 0),
     ),
   );

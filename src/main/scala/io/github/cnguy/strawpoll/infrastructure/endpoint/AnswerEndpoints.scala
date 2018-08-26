@@ -7,7 +7,6 @@ import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import io.github.cnguy.strawpoll.domain.AnswerNotFoundError
 import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerService}
 
 class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
@@ -15,6 +14,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
 
   implicit val answerDecoder = jsonOf[F, Answer]
 
+  /*
   def createAnswerEndpoint(answerService: AnswerService[F]): HttpService[F] =
     HttpService[F] {
       case req @ POST -> Root / "answers" => {
@@ -34,6 +34,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
           case Left(AnswerNotFoundError) => NotFound("The answer was not found.")
         }
     }
+   */
 
   private def listAnswersFromPoll(answerService: AnswerService[F]): HttpService[F] =
     HttpService[F] {
@@ -57,8 +58,8 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
     }
 
   def endpoints(answerService: AnswerService[F]): HttpService[F] =
-    createAnswerEndpoint(answerService) <+> getAnswerEndpoint(answerService) <+> listAnswersFromPoll(
-      answerService) <+> voteAnswerEndpoint(answerService)
+    /* createAnswerEndpoint(answerService) <+> getAnswerEndpoint(answerService) <+> */
+    listAnswersFromPoll(answerService) <+> voteAnswerEndpoint(answerService)
 }
 
 object AnswerEndpoints {

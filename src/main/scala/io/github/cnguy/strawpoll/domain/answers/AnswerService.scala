@@ -1,7 +1,6 @@
 package io.github.cnguy.strawpoll.domain.answers
 
 import scala.language.higherKinds
-
 import cats.Monad
 import cats.data.EitherT
 import io.github.cnguy.strawpoll.domain.AnswerNotFoundError
@@ -10,8 +9,6 @@ class AnswerService[F[_]](answerRepo: AnswerRepositoryAlgebra[F]) {
   import cats.syntax.all._
 
   def createAnswer(answer: Answer): F[Answer] = answerRepo.create(answer)
-
-  def createBatch(answers: List[Answer]) = answerRepo.createBatch(answers)
 
   def get(id: Long)(implicit M: Monad[F]): EitherT[F, AnswerNotFoundError.type, Answer] =
     EitherT.fromOptionF(answerRepo.get(id), AnswerNotFoundError)
