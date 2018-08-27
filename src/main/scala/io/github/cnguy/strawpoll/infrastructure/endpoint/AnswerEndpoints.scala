@@ -15,16 +15,6 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   implicit val answerDecoder = jsonOf[F, Answer]
   implicit val answersDecoder = jsonOf[F, List[Answer]]
 
-  def createMultipleAnswersEndpoint(answerService: AnswerService[F]): HttpService[F] =
-    HttpService[F] {
-      case req @ POST -> Root / "answers" / "batch" => {
-        for {
-          answers <- req.as[List[Answer]]
-          saved <- answerService.createMultipleAnswers(answers)
-          resp <- Ok(saved.asJson)
-        } yield resp
-      }
-    }
   def createAnswerEndpoint(answerService: AnswerService[F]): HttpService[F] =
     HttpService[F] {
       case req @ POST -> Root / "answers" => {
@@ -35,6 +25,18 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
         } yield resp
       }
     }
+
+  def createMultipleAnswersEndpoint(answerService: AnswerService[F]): HttpService[F] =
+    HttpService[F] {
+      case req @ POST -> Root / "answers" / "batch" => {
+        for {
+          answers <- req.as[List[Answer]]
+          saved <- answerService.createMultipleAnswers(answers)
+          resp <- Ok(saved.asJson)
+        } yield resp
+      }
+    }
+
   /*
 
   private def getAnswerEndpoint(answerService: AnswerService[F]): HttpService[F] =
@@ -69,7 +71,6 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
     }
 
   def endpoints(answerService: AnswerService[F]): HttpService[F] =
-    /* createAnswerEndpoint(answerService) <+> getAnswerEndpoint(answerService) <+> */
     createAnswerEndpoint(answerService) <+> createMultipleAnswersEndpoint(answerService) <+>
       listAnswersFromPoll(answerService) <+> voteAnswerEndpoint(answerService)
 }
