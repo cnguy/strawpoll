@@ -26,29 +26,6 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
       }
     }
 
-  def createMultipleAnswersEndpoint(answerService: AnswerService[F]): HttpService[F] =
-    HttpService[F] {
-      case req @ POST -> Root / "answers" / "batch" => {
-        for {
-          answers <- req.as[List[Answer]]
-          saved <- answerService.createMultipleAnswers(answers)
-          resp <- Ok(saved.asJson)
-        } yield resp
-      }
-    }
-
-  /*
-
-  private def getAnswerEndpoint(answerService: AnswerService[F]): HttpService[F] =
-    HttpService[F] {
-      case GET -> Root / "answers" / LongVar(id) =>
-        answerService.get(id).value.flatMap {
-          case Right(found) => Ok(found.asJson)
-          case Left(AnswerNotFoundError) => NotFound("The answer was not found.")
-        }
-    }
-   */
-
   private def listAnswersFromPoll(answerService: AnswerService[F]): HttpService[F] =
     HttpService[F] {
       case GET -> Root / "polls" / LongVar(pollId) / "answers" =>
@@ -71,7 +48,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
     }
 
   def endpoints(answerService: AnswerService[F]): HttpService[F] =
-    createAnswerEndpoint(answerService) <+> createMultipleAnswersEndpoint(answerService) <+>
+    createAnswerEndpoint(answerService) <+>
       listAnswersFromPoll(answerService) <+> voteAnswerEndpoint(answerService)
 }
 

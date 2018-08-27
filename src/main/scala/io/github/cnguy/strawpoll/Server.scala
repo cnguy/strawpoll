@@ -31,7 +31,7 @@ object Server extends StreamApp[IO] {
         .bindHttp(8080, "localhost")
         .mountService(IndexEndpoint.endpoints[F](), "/")
         .mountService(AnswerEndpoints.endpoints[F](answerService), "/api")
-        .mountService(PollEndpoints.endpoints[F](pollService), "/api")
+        .mountService(PollEndpoints.endpoints[F](pollService, answerService), "/api")
         .serve
     } yield exitCode
 }

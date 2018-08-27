@@ -10,8 +10,8 @@ class AnswerService[F[_]](answerRepo: AnswerRepositoryAlgebra[F]) {
 
   def createAnswer(answer: Answer): F[Answer] = answerRepo.create(answer)
 
-  def createMultipleAnswers(answers: List[Answer]): F[List[Answer]] =
-    answerRepo.createBatch(answers)
+  def createMultipleAnswersForPoll(pollId: Long, answers: List[AnswerWithNoPollId]): F[List[Answer]] =
+    answerRepo.createBatchForPoll(pollId, answers)
 
   def get(id: Long)(implicit M: Monad[F]): EitherT[F, AnswerNotFoundError.type, Answer] =
     EitherT.fromOptionF(answerRepo.get(id), AnswerNotFoundError)
