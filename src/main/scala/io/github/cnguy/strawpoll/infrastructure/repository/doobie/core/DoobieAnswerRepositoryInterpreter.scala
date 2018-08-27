@@ -55,7 +55,7 @@ class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
         "COUNT",
         "ID"
       )(answers2.map(answer =>
-        answer.copy(id = Some(UUID.randomUUID.getMostSignificantBits & Long.MaxValue))))
+        answer.copy(id = Some((UUID.randomUUID.getMostSignificantBits & Long.MaxValue) / 100000))))
       .compile
       .toList
       .transact(xa)
