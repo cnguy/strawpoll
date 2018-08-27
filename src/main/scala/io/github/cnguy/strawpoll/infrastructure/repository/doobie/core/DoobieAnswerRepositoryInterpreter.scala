@@ -6,6 +6,7 @@ import cats.implicits._
 import doobie._
 import doobie.implicits._
 import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerRepositoryAlgebra}
+import java.util.UUID
 
 private object AnswerSQL {
   def select(answerId: Long): Query0[Answer] = sql"""
@@ -25,6 +26,10 @@ private object AnswerSQL {
     VALUES (${answer.pollId}, ${answer.response}, ${answer.rank}, 0)
   """.update
 
+  def insertBatch(answers: List[Answer]): Update[Answer] =
+    Update[Answer](
+      "INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT, ID) VALUES (?, ?, ?, ?, ?)")
+
   def vote(answerId: Long): Update0 = sql"""
     UPDATE ANSWERS
     SET COUNT = COUNT + 1
@@ -37,6 +42,8 @@ private object AnswerSQL {
   """.update
 }
 
+case class AnswerInfo(pollId: Long, response: String, rank: Int, count: Int = 0)
+
 class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
     extends AnswerRepositoryAlgebra[F] {
 
@@ -45,6 +52,21 @@ class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
       .insert(answer)
       .withUniqueGeneratedKeys[Long]("ID")
       .map(id => answer.copy(id = id.some))
+      .transact(xa)
+
+  def createBatch(answers: List[Answer]): F[List[Answer]] =
+    AnswerSQL
+      .insertBatch(answers)
+      .updateManyWithGeneratedKeys[Answer](
+        "POLL_ID",
+        "RESPONSE",
+        "RANK",
+        "COUNT",
+        "ID"
+      )(answers.map(answer =>
+        answer.copy(id = Some(UUID.randomUUID.getMostSignificantBits & Long.MaxValue))))
+      .compile
+      .toList
       .transact(xa)
 
   def get(answerId: Long): F[Option[Answer]] =

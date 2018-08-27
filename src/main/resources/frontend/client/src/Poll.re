@@ -23,7 +23,7 @@ let make = (~id: int, _children) => {
     | Vote((optionId: int)) => ReasonReact.Update({...state, optionId})
     | Submit =>
       if (state.optionId !== 0) {
-        Js.Promise.(PollService.vote(state.optionId)) |> ignore;
+        PollService.vote(state.optionId) |> ignore;
       };
       NoUpdate;
     },
@@ -32,6 +32,7 @@ let make = (~id: int, _children) => {
     | Some((poll: poll)) =>
       let answers =
         poll.answers
+        |> List.sort((a, b) => a.rank - b.rank)
         |> List.map((answer: answer) =>
              <li key={string_of_int(answer.id)}>
                <input

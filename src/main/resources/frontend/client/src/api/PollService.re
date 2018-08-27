@@ -56,51 +56,44 @@ let getPoll = (id: int, callback: option(poll) => unit): unit => {
   ();
 };
 
-let makeAnswers = (pollId: int, answers: list(answerStub)) =>
-  /* The Scala backend should handle batch creation. This is just temporary stuff, since I'm lazy. */
-  /* Note that this makes a request PER answer. Obvious trash is trash. */
-  answers
-  |> List.filter(answer => String.length(answer.response) > 0)
-  |> List.map(answer => {
-       let answerPayload = Js.Dict.empty();
-       Js.Dict.set(
-         answerPayload,
-         "pollId",
-         Js.Json.number(float_of_int(pollId)),
-       );
-       Js.Dict.set(
-         answerPayload,
-         "rank",
-         Js.Json.number(float_of_int(answer.fieldId)),
-       );
-       Js.Dict.set(
-         answerPayload,
-         "response",
-         Js.Json.string(answer.response),
-       );
-       /* Necessary for API to not break. All fields are required. */
-       Js.Dict.set(answerPayload, "count", Js.Json.number(0.));
-       Js.Promise.(
-         Fetch.fetchWithInit(
-           "/api/answers",
-           Fetch.RequestInit.make(
-             ~method_=Post,
-             ~body=
-               Fetch.BodyInit.make(
-                 Js.Json.stringify(Js.Json.object_(answerPayload)),
-               ),
-             ~headers=
-               Fetch.HeadersInit.make({"Content-Type": "application/json"}),
-             (),
-           ),
-         )
-         |> then_(Fetch.Response.json)
-       );
-     });
+let makeAnswers = (pollId: int, answers: list(answerStub)) => {
+  let payload =
+    answers
+    |> List.filter(answer => String.length(answer.response) > 0)
+    |> List.map(stub =>
+         {
+           pollId,
+           response: stub.response,
+           rank: stub.fieldId,
+           count: 0,
+           id: 0,
+         }
+       )
+    |> Encoder.answers;
+  Js.Promise.(
+    Fetch.fetchWithInit(
+      "/api/answers/batch",
+      Fetch.RequestInit.make(
+        ~method_=Post,
+        ~body=Fetch.BodyInit.make(Js.Json.stringify(payload)),
+        ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+        (),
+      ),
+    )
+    |> then_(Fetch.Response.json)
+  );
+};
 
 let makePoll = (poll: pollStub, answers: list(answerStub)) => {
   let pollPayload = Js.Dict.empty();
   Js.Dict.set(pollPayload, "question", Js.Json.string(poll.question));
+  Js.Dict.set(
+    pollPayload,
+    "answers",
+    Encoder.answerStubs(
+      answers |> List.filter(answer => String.length(answer.response) > 0),
+    ),
+  );
   Js.Promise.(
     Fetch.fetchWithInit(
       "/api/polls",

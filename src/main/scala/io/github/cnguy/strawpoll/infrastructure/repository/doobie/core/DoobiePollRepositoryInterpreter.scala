@@ -43,6 +43,8 @@ class DoobiePollRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
 }
 
 object DoobiePollRepositoryInterpreter {
-  def apply[F[_]: Monad](xa: Transactor[F]): DoobiePollRepositoryInterpreter[F] =
+  def apply[F[_]: Monad](
+      xa: Transactor[F]
+  ): DoobiePollRepositoryInterpreter[F] =
     new DoobiePollRepositoryInterpreter[F](xa)
 }

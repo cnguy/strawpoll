@@ -7,3 +7,10 @@ final case class Answer(
     count: Int = 0,
     id: Option[Long] = None
 )
+
+final case class AnswerWithNoPollId(
+    response: String,
+    rank: Int,
+    count: Int = 0,
+    id: Option[Long] = None
+)
