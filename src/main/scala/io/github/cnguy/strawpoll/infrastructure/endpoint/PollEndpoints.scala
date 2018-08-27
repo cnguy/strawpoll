@@ -19,6 +19,15 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   implicit val pollRequestDecoder = jsonOf[F, PollRequest]
   implicit val pollDecoder = jsonOf[F, Poll]
 
+  private def getPollEndpoint(pollService: PollService[F]): HttpService[F] =
+    HttpService[F] {
+      case GET -> Root / "polls" / LongVar(id) =>
+        pollService.get(id).value.flatMap {
+          case Right(found) => Ok(found.asJson)
+          case Left(PollNotFoundError) => NotFound("The poll was not found.")
+        }
+    }
+
   def createPollEndpoint(
       pollService: PollService[F],
       answerService: AnswerService[F]): HttpService[F] =
@@ -33,17 +42,8 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
       }
     }
 
-  private def getPollEndpoint(pollService: PollService[F]): HttpService[F] =
-    HttpService[F] {
-      case GET -> Root / "polls" / LongVar(id) =>
-        pollService.get(id).value.flatMap {
-          case Right(found) => Ok(found.asJson)
-          case Left(PollNotFoundError) => NotFound("The poll was not found.")
-        }
-    }
-
   def endpoints(pollService: PollService[F], answerService: AnswerService[F]): HttpService[F] =
-    createPollEndpoint(pollService, answerService) <+> getPollEndpoint(pollService)
+    getPollEndpoint(pollService) <+> createPollEndpoint(pollService, answerService)
 }
 
 object PollEndpoints {

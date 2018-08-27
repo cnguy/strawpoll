@@ -25,11 +25,6 @@ private object AnswerSQL {
     WHERE POLL_ID = $pollId
   """.query[Answer]
 
-  def insert(answer: Answer): Update0 = sql"""
-    INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT)
-    VALUES (${answer.pollId}, ${answer.response}, ${answer.rank}, 0)
-  """.update
-
   def insertBatch(answers: List[Answer]): Update[Answer] =
     Update[Answer](
       "INSERT INTO ANSWERS (POLL_ID, RESPONSE, RANK, COUNT, ID) VALUES (?, ?, ?, ?, ?)")
@@ -39,22 +34,15 @@ private object AnswerSQL {
     SET COUNT = COUNT + 1
     WHERE ID = $answerId
   """.update
-
-  def delete(answerId: Long): Update0 = sql"""
-    DELETE FROM ANSWERS
-    WHERE ID = $answerId
-  """.update
 }
 
 class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
     extends AnswerRepositoryAlgebra[F] {
+  def get(answerId: Long): F[Option[Answer]] =
+    AnswerSQL.select(answerId).option.transact(xa)
 
-  def create(answer: Answer): F[Answer] =
-    AnswerSQL
-      .insert(answer)
-      .withUniqueGeneratedKeys[Long]("ID")
-      .map(id => answer.copy(id = id.some))
-      .transact(xa)
+  def list(pollId: Long): F[List[Answer]] =
+    AnswerSQL.selectByPoll(pollId).to[List].transact(xa)
 
   def createBatchForPoll(pollId: Long, answers: List[AnswerWithNoPollId]): F[List[Answer]] = {
     val answers2 = answers.map(answer => Answer(pollId, answer.response, answer.rank))
@@ -73,20 +61,9 @@ class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
       .transact(xa)
   }
 
-  def get(answerId: Long): F[Option[Answer]] =
-    AnswerSQL.select(answerId).option.transact(xa)
-
-  def list(pollId: Long): F[List[Answer]] =
-    AnswerSQL.selectByPoll(pollId).to[List].transact(xa)
-
   def vote(answerId: Long): F[Option[Answer]] =
     OptionT(get(answerId))
       .semiflatMap(answer => AnswerSQL.vote(answerId).run.transact(xa).as(answer))
-      .value
-
-  def delete(answerId: Long): F[Option[Answer]] =
-    OptionT(get(answerId))
-      .semiflatMap(answer => AnswerSQL.delete(answerId).run.transact(xa).as(answer))
       .value
 }
 
