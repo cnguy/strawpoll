@@ -6,9 +6,7 @@ class AnswerService[F[_]](answerRepo: AnswerRepositoryAlgebra[F]) {
   def list(pollId: Long): F[List[Answer]] =
     answerRepo.list(pollId)
 
-  def createMultipleAnswersForPoll(
-      pollId: Long,
-      answers: List[AnswerWithNoPollId]): F[List[Answer]] =
+  def createMultipleAnswersForPoll(pollId: Long, answers: List[Answer]): F[List[Answer]] =
     answerRepo.createBatchForPoll(pollId, answers)
 
   def vote(id: Long): F[Option[Answer]] =

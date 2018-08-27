@@ -8,10 +8,10 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import io.github.cnguy.strawpoll.domain.PollNotFoundError
-import io.github.cnguy.strawpoll.domain.answers.{AnswerService, AnswerWithNoPollId}
+import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerService}
 import io.github.cnguy.strawpoll.domain.polls.{Poll, PollService}
 
-case class PollRequest(question: String, answers: List[AnswerWithNoPollId])
+case class PollRequest(question: String, answers: List[Answer])
 
 class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   import cats.implicits._
