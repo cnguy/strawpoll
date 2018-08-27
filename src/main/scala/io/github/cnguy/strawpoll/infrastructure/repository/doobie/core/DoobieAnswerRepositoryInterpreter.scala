@@ -5,7 +5,11 @@ import cats.data.OptionT
 import cats.implicits._
 import doobie._
 import doobie.implicits._
-import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerRepositoryAlgebra, AnswerWithNoPollId}
+import io.github.cnguy.strawpoll.domain.answers.{
+  Answer,
+  AnswerRepositoryAlgebra,
+  AnswerWithNoPollId
+}
 import java.util.UUID
 
 private object AnswerSQL {
@@ -57,13 +61,13 @@ class DoobieAnswerRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
     AnswerSQL
       .insertBatch(answers2)
       .updateManyWithGeneratedKeys[Answer](
-      "POLL_ID",
-      "RESPONSE",
-      "RANK",
-      "COUNT",
-      "ID"
-    )(answers2.map(answer =>
-      answer.copy(id = Some(UUID.randomUUID.getMostSignificantBits & Long.MaxValue))))
+        "POLL_ID",
+        "RESPONSE",
+        "RANK",
+        "COUNT",
+        "ID"
+      )(answers2.map(answer =>
+        answer.copy(id = Some(UUID.randomUUID.getMostSignificantBits & Long.MaxValue))))
       .compile
       .toList
       .transact(xa)

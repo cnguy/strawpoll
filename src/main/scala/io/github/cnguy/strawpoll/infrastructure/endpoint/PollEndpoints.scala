@@ -19,12 +19,14 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   implicit val pollRequestDecoder = jsonOf[F, PollRequest]
   implicit val pollDecoder = jsonOf[F, Poll]
 
-  def createPollEndpoint(pollService: PollService[F], answerService: AnswerService[F]): HttpService[F] =
+  def createPollEndpoint(
+      pollService: PollService[F],
+      answerService: AnswerService[F]): HttpService[F] =
     HttpService[F] {
       case req @ POST -> Root / "polls" => {
         for {
           pollRequest <- req.as[PollRequest]
-          saved <- pollService.createPoll(Poll(question=pollRequest.question))
+          saved <- pollService.createPoll(Poll(question = pollRequest.question))
           _ <- answerService.createMultipleAnswersForPoll(saved.id.get, pollRequest.answers)
           resp <- Ok(saved.asJson)
         } yield resp
@@ -45,6 +47,8 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
 }
 
 object PollEndpoints {
-  def endpoints[F[_]: Effect](pollService: PollService[F], answerService: AnswerService[F]): HttpService[F] =
+  def endpoints[F[_]: Effect](
+      pollService: PollService[F],
+      answerService: AnswerService[F]): HttpService[F] =
     new PollEndpoints[F].endpoints(pollService, answerService)
 }
