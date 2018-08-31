@@ -28,7 +28,7 @@ object Server extends StreamApp[IO] {
       answerService = AnswerService[F](answerRepo)
       pollService = PollService[F](pollRepo)
       exitCode <- BlazeBuilder[F]
-        .bindHttp(8080, "localhost")
+        .bindHttp(sys.env.getOrElse("PORT", "8080").toInt, "0.0.0.0")
         .mountService(IndexEndpoint.endpoints[F](), "/")
         .mountService(AnswerEndpoints.endpoints[F](answerService), "/api")
         .mountService(PollEndpoints.endpoints[F](pollService, answerService), "/api")
