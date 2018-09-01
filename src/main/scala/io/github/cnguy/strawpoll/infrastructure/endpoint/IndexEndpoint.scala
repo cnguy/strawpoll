@@ -35,6 +35,12 @@ class IndexEndpoint[F[_]: Effect] extends Http4sDsl[F] {
             new File(getClass.getClassLoader.getResource("frontend/client/build/Index.js").getPath),
             Some(request))
           .getOrElseF(NotFound())
+      case request @ GET -> Root / "Index.css" =>
+        StaticFile
+          .fromFile(
+            new File(getClass.getClassLoader.getResource("frontend/client/src/Index.css").getPath),
+            Some(request))
+          .getOrElseF(NotFound())
     }
 
   def endpoints(): HttpService[F] =

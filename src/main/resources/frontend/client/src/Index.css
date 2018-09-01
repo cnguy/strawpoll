@@ -1,0 +1,31 @@
+html {
+    background-color: black;
+    color: black;
+    font-family: "Hack";
+}
+
+.poll {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background-color: white;
+    min-width: 400px;
+    transform: translate(-50%, -50%);
+}
+
+.poll__question, .poll__row {
+    padding: 5px 0 5px 2.5px;
+    width: 100%;
+}
+
+.poll__question {
+    font-size: 1.5em;
+}
+
+.poll input[type=text] {
+    border: 0;
+}
+
+.poll input[type=text]:focus {
+    outline: none;
+}

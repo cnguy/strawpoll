@@ -53,7 +53,6 @@ let make = _children => {
       })
     | RemoveAnswer(_answerId) => NoUpdate
     | SubmitPoll =>
-      Js.log(state);
       PollService.makePoll({question: state.question}, state.answerStubs)
       |> ignore;
       NoUpdate;
@@ -62,8 +61,10 @@ let make = _children => {
     let answerFields =
       self.state.answerStubs
       |> List.map(answer =>
-           <div key={string_of_int(answer.fieldId)}>
+           <div key={string_of_int(answer.fieldId)} className="poll__row">
              <input
+               type_="text"
+               className="poll__row__option"
                onChange={
                  event =>
                    self.send(
@@ -80,8 +81,10 @@ let make = _children => {
          )
       |> Array.of_list
       |> ReasonReact.array;
-    <>
+    <div className="poll">
       <input
+        type_="text"
+        className="poll__question"
         onChange={
           event =>
             self.send(SetQuestion(event->ReactEvent.Form.target##value))
@@ -94,6 +97,6 @@ let make = _children => {
       <button onClick={_event => self.send(SubmitPoll)}>
         {ReasonReact.string("Submit")}
       </button>
-    </>;
+    </div>;
   },
 };
