@@ -6,8 +6,6 @@ let apiBaseUrl = () =>
   | Environment.Production => "https://strawpoll-scala-reason.herokuapp.com"
   };
 
-Js.log(apiBaseUrl());
-
 let rawAnswersToAnswers = (rawAnswers: list(rawAnswer)) => {
   let answers =
     rawAnswers

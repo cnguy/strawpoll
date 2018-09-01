@@ -3,6 +3,7 @@ open Types;
 type state = {
   question: string,
   answerStubs: list(answerStub),
+  isLoading: bool,
 };
 
 type action =
@@ -10,6 +11,7 @@ type action =
   | ChangeAnswer(int, string)
   | AddAnswer(answerStub)
   | RemoveAnswer(int)
+  | SetIsLoading(bool)
   | SubmitPoll;
 
 let component = ReasonReact.reducerComponent("NewPoll");
@@ -19,6 +21,7 @@ let make = _children => {
   initialState: () => {
     question: "",
     answerStubs: [{fieldId: 0, response: ""}, {fieldId: 1, response: ""}],
+    isLoading: false,
   },
   reducer: (action, state) =>
     switch (action) {
@@ -52,10 +55,25 @@ let make = _children => {
         answerStubs: state.answerStubs |> List.append([answer]),
       })
     | RemoveAnswer(_answerId) => NoUpdate
+    | SetIsLoading(isLoading) => ReasonReact.Update({...state, isLoading})
     | SubmitPoll =>
-      PollService.makePoll({question: state.question}, state.answerStubs)
-      |> ignore;
-      NoUpdate;
+      ReasonReact.UpdateWithSideEffects(
+        {...state, isLoading: true},
+        (
+          self =>
+            PollService.makePoll(
+              {question: state.question},
+              state.answerStubs,
+            )
+            |> Js.Promise.then_(json => {
+                 self.send(SetIsLoading(false));
+                 let poll = Decoder.poll(json);
+                 ReasonReact.Router.push("/p/" ++ string_of_int(poll.id));
+                 Js.Promise.resolve();
+               })
+            |> ignore
+        ),
+      )
     },
   render: self => {
     let answerFields =
