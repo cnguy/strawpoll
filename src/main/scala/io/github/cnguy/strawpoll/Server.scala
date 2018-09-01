@@ -10,6 +10,7 @@ import io.github.cnguy.strawpoll.domain.answers.AnswerService
 import io.github.cnguy.strawpoll.domain.polls.PollService
 import io.github.cnguy.strawpoll.infrastructure.repository.doobie.core._
 import org.http4s.server.blaze.BlazeBuilder
+import org.http4s.server.middleware._
 
 object Server extends StreamApp[IO] {
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -30,8 +31,8 @@ object Server extends StreamApp[IO] {
       exitCode <- BlazeBuilder[F]
         .bindHttp(sys.env.getOrElse("PORT", "8080").toInt, "0.0.0.0")
         .mountService(IndexEndpoint.endpoints[F](), "/")
-        .mountService(AnswerEndpoints.endpoints[F](answerService), "/api")
-        .mountService(PollEndpoints.endpoints[F](pollService, answerService), "/api")
+        .mountService(CORS(AnswerEndpoints.endpoints[F](answerService)), "/api")
+        .mountService(CORS(PollEndpoints.endpoints[F](pollService, answerService)), "/api")
         .serve
     } yield exitCode
 }

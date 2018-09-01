@@ -1,5 +1,10 @@
 open Types;
 
+let apiBaseUrl =
+  switch (Environment.nodeEnv) {
+  | _ => "https://strawpoll-scala-reason.herokuapp.com"
+  };
+
 let rawAnswersToAnswers = (rawAnswers: list(rawAnswer)) => {
   let answers =
     rawAnswers
@@ -16,7 +21,9 @@ let makePoll = (rawPoll: rawPoll, answers: list(answer)) => {
 
 let getAnswers = (pollId: int, callback: option(list(answer)) => unit): unit => {
   Js.Promise.(
-    Fetch.fetch("/api/polls/" ++ string_of_int(pollId) ++ "/answers")
+    Fetch.fetch(
+      apiBaseUrl ++ "/api/polls/" ++ string_of_int(pollId) ++ "/answers",
+    )
     |> then_(Fetch.Response.json)
     |> then_(payload =>
          payload
@@ -33,7 +40,7 @@ let getAnswers = (pollId: int, callback: option(list(answer)) => unit): unit => 
 
 let getPoll = (id: int, callback: option(poll) => unit): unit => {
   Js.Promise.(
-    Fetch.fetch("/api/polls/" ++ string_of_int(id))
+    Fetch.fetch(apiBaseUrl ++ "/api/polls/" ++ string_of_int(id))
     |> then_(Fetch.Response.json)
     |> then_(payload => {
          let rawPoll = payload |> Decoder.poll;
@@ -68,7 +75,7 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
   );
   Js.Promise.(
     Fetch.fetchWithInit(
-      "/api/polls",
+      apiBaseUrl ++ "/api/polls",
       Fetch.RequestInit.make(
         ~method_=Post,
         ~body=
@@ -86,7 +93,7 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
 let vote = (answerId: int) =>
   Js.Promise.(
     Fetch.fetchWithInit(
-      "/api/answers/" ++ string_of_int(answerId),
+      apiBaseUrl ++ "/api/answers/" ++ string_of_int(answerId),
       Fetch.RequestInit.make(
         ~method_=Put,
         ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
