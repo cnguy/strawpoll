@@ -11,6 +11,7 @@ let make = (~id: int, _children) => {
   ...component,
   initialState: () => {poll: None},
   didMount: self => {
+    PollService.getPoll(id, maybePoll => self.send(SetPoll(maybePoll)));
     let intervalID =
       Js.Global.setInterval(
         () =>
