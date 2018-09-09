@@ -5,18 +5,21 @@ import cats.data.OptionT
 import cats.implicits._
 import doobie._
 import doobie.implicits._
-import io.github.cnguy.strawpoll.domain.polls.{Poll, PollRepositoryAlgebra}
+import io.github.cnguy.strawpoll.domain.polls.{Poll, PollRepositoryAlgebra, PollSecurityType}
 
 private object PollSQL {
+  implicit val SecurityTypeMeta: Meta[PollSecurityType] =
+    Meta[String].xmap(PollSecurityType.withName, _.entryName)
+
   def select(pollId: Long): Query0[Poll] = sql"""
-    SELECT QUESTION, ID
+    SELECT QUESTION, SECURITY_TYPE, ID
     FROM POLLS
     WHERE ID = $pollId
   """.query[Poll]
 
   def insert(poll: Poll): Update0 = sql"""
-    INSERT INTO POLLS (QUESTION)
-    VALUES (${poll.question})
+    INSERT INTO POLLS (QUESTION, SECURITY_TYPE)
+    VALUES (${poll.question}, ${poll.securityType})
   """.update
 
   def delete(pollId: Long): Update0 = sql"""

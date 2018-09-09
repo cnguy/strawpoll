@@ -16,6 +16,8 @@ val ScalaTestVersion  = "3.0.4"
 val FlywayVersion     = "4.2.0"
 val PureConfigVersion = "0.9.1"
 val TsecVersion       = "0.0.1-M11"
+val EnumeratumVersion      = "1.5.13"
+val EnumeratumCirceVersion = "1.5.17"
 
 libraryDependencies ++= Seq(
   "org.typelevel"         %% "cats-core"            % CatsVersion,
@@ -29,6 +31,8 @@ libraryDependencies ++= Seq(
   "org.tpolecat"          %% "doobie-h2"            % DoobieVersion,
   "org.tpolecat"          %% "doobie-scalatest"     % DoobieVersion,
   "org.tpolecat"          %% "doobie-hikari"        % DoobieVersion,
+  "com.beachape"          %% "enumeratum"           % EnumeratumVersion,
+  "com.beachape"          %% "enumeratum-circe"     % EnumeratumCirceVersion,
   "com.h2database"        %  "h2"                   % H2Version,
   "org.http4s"            %% "http4s-blaze-server"  % Http4sVersion,
   "org.http4s"            %% "http4s-circe"         % Http4sVersion,

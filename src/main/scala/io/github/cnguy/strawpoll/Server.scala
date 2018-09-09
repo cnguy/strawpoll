@@ -6,6 +6,7 @@ import infrastructure.repository.doobie.core._
 import cats.effect._
 import fs2.StreamApp.ExitCode
 import fs2.{Stream, StreamApp}
+import io.github.cnguy.strawpoll.domain.ips.IpAddressService
 import io.github.cnguy.strawpoll.domain.answers.AnswerService
 import io.github.cnguy.strawpoll.domain.polls.PollService
 import io.github.cnguy.strawpoll.infrastructure.repository.doobie.core._
@@ -24,14 +25,18 @@ object Server extends StreamApp[IO] {
       conf <- Stream.eval(SiteConfig.load[F])
       xa <- Stream.eval(DatabaseConfig.dbTransactor(conf.db))
       _ <- Stream.eval(DatabaseConfig.initializeDb(conf.db, xa))
+      ipAddressRepo = DoobieIpAddressRepositoryInterpreter[F](xa)
       answerRepo = DoobieAnswerRepositoryInterpreter[F](xa)
       pollRepo = DoobiePollRepositoryInterpreter[F](xa)
+      ipAddressService = IpAddressService[F](ipAddressRepo)
       answerService = AnswerService[F](answerRepo)
       pollService = PollService[F](pollRepo)
       exitCode <- BlazeBuilder[F]
         .bindHttp(sys.env.getOrElse("PORT", "8080").toInt, "0.0.0.0")
         .mountService(IndexEndpoint.endpoints[F](), "/")
-        .mountService(CORS(AnswerEndpoints.endpoints[F](answerService)), "/api")
+        .mountService(
+          CORS(AnswerEndpoints.endpoints[F](answerService, pollService, ipAddressService)),
+          "/api")
         .mountService(CORS(PollEndpoints.endpoints[F](pollService, answerService)), "/api")
         .serve
     } yield exitCode
