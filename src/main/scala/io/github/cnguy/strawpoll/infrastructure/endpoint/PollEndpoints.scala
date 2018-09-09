@@ -8,13 +8,8 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import io.github.cnguy.strawpoll.domain.PollNotFoundError
-import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerService}
-import io.github.cnguy.strawpoll.domain.polls.{Poll, PollSecurityType, PollService}
-
-case class PollRequest(
-    question: String,
-    securityType: Option[PollSecurityType],
-    answers: List[Answer])
+import io.github.cnguy.strawpoll.domain.answers.{AnswerService}
+import io.github.cnguy.strawpoll.domain.polls.{Poll, PollRequest, PollService}
 
 class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
   import cats.implicits._
@@ -39,7 +34,8 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
         for {
           pollRequest <- req.as[PollRequest]
           saved <- pollService.createPoll(
-            Poll(question = pollRequest.question, securityType = pollRequest.securityType))
+            pollRequest.toPoll
+          )
           _ <- answerService.createMultipleAnswersForPoll(saved.id.get, pollRequest.answers)
           resp <- Ok(saved.asJson)
         } yield resp
