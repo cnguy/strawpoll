@@ -91,24 +91,6 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
             }
             case Left(AnswerNotFoundError) => NotFound("The answer was not found.")
           }
-
-          /*
-          ipAddresses <- ipAddressService.list(id)
-          exists = ipAddresses.exists(_.value == req.remoteAddr.getOrElse("null"))
-          _ = println(ipAddresses)
-          _ = println(exists)
-          resp <- if (exists) {
-            NotFound()
-          } else {
-            for {
-              answer <- answerService.vote(id)
-              _ = println(req.remoteAddr)
-              innerResp <- answer match {
-              case Some(a) => Ok (a.copy(count = a.count + 1).asJson)
-              case None => NotFound ()
-            }
-            } yield innerResp
-          }*/
         } yield resp
     }
 
