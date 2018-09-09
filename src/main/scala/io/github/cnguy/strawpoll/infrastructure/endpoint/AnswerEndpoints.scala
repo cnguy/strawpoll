@@ -53,7 +53,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
                               answer <- answerService.vote(id)
                               _ = println(req.remoteAddr)
                               innerResp <- answer match {
-                                case Some(a) => Ok (a.copy(count = a.count + 1).asJson)
+                                case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
                                 case None => NotFound("The answer was not found.")
                               }
                             } yield innerResp
