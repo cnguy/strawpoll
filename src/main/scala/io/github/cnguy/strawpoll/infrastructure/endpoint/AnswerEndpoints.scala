@@ -9,7 +9,7 @@ import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import io.github.cnguy.strawpoll.domain.answers.{Answer, AnswerService}
-import io.github.cnguy.strawpoll.domain.ips.{IpAddressService}
+import io.github.cnguy.strawpoll.domain.ips.{IpAddress, IpAddressService}
 import io.github.cnguy.strawpoll.domain.polls.PollSecurityType.{BrowserCookieCheck, IpAddressCheck}
 import io.github.cnguy.strawpoll.domain.polls.PollService
 
@@ -51,6 +51,10 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
                           } else {
                             for {
                               answer <- answerService.vote(id)
+                              _ <- ipAddressService.create(
+                                IpAddress(
+                                  answer.get.id.getOrElse(0),
+                                  req.remoteAddr.getOrElse("null")))
                               _ = println(req.remoteAddr)
                               innerResp <- answer match {
                                 case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
