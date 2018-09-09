@@ -29,7 +29,7 @@ class DoobieIpAddressRepositoryInterpreter[F[_]: Monad](val xa: Transactor[F])
     IpAddressSQL
       .insert(ipAddress)
       .withUniqueGeneratedKeys[Long]("ID")
-      .map((id: Long) => ipAddress.copy(id = id.some))
+      .map(id => ipAddress.copy(id = id.some))
       .transact(xa)
 }
 
