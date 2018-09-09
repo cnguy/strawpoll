@@ -15,4 +15,8 @@ let poll = json =>
   Json.Decode.{
     id: json |> field("id", int),
     question: json |> field("question", string),
+    securityType:
+      json
+      |> field("securityType", Json.Decode.optional(string))
+      |> PollSecurityType.fromOptionalString,
   };

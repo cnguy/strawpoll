@@ -16,7 +16,12 @@ let rawAnswersToAnswers = (rawAnswers: list(rawAnswer)) => {
 };
 
 let makePoll = (rawPoll: rawPoll, answers: list(answer)) => {
-  let poll = {id: rawPoll.id, question: rawPoll.question, answers};
+  let poll = {
+    id: rawPoll.id,
+    question: rawPoll.question,
+    answers,
+    securityType: rawPoll.securityType,
+  };
   Some(poll);
 };
 
@@ -73,6 +78,15 @@ let makePoll = (poll: pollStub, answers: list(answerStub)) => {
     Encoder.answerStubs(
       answers |> List.filter(answer => String.length(answer.response) > 0),
     ),
+  );
+  Js.Dict.set(
+    pollPayload,
+    "securityType",
+    switch (poll.securityType) {
+    | Some(_securityType) =>
+      Js.Json.string(PollSecurityType.toString(poll.securityType))
+    | None => Js.Json.null
+    },
   );
   Js.Promise.(
     Fetch.fetchWithInit(

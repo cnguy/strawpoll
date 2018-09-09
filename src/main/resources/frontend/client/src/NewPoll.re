@@ -3,6 +3,7 @@ open Types;
 type state = {
   question: string,
   answerStubs: list(answerStub),
+  pollSecurityType: option(pollSecurityType),
   isLoading: bool,
 };
 
@@ -11,6 +12,7 @@ type action =
   | ChangeAnswer(int, string)
   | AddAnswer(answerStub)
   | RemoveAnswer(int)
+  | SetPollSecurityType(option(pollSecurityType))
   | SetIsLoading(bool)
   | SubmitPoll;
 
@@ -21,6 +23,7 @@ let make = _children => {
   initialState: () => {
     question: "",
     answerStubs: [{fieldId: 0, response: ""}, {fieldId: 1, response: ""}],
+    pollSecurityType: None,
     isLoading: false,
   },
   reducer: (action, state) =>
@@ -55,6 +58,8 @@ let make = _children => {
         answerStubs: state.answerStubs |> List.append([answer]),
       })
     | RemoveAnswer(_answerId) => NoUpdate
+    | SetPollSecurityType(pollSecurityType) =>
+      ReasonReact.Update({...state, pollSecurityType})
     | SetIsLoading(isLoading) => ReasonReact.Update({...state, isLoading})
     | SubmitPoll =>
       ReasonReact.UpdateWithSideEffects(
@@ -62,7 +67,10 @@ let make = _children => {
         (
           self =>
             PollService.makePoll(
-              {question: state.question},
+              {
+                question: state.question,
+                securityType: state.pollSecurityType,
+              },
               state.answerStubs,
             )
             |> Js.Promise.then_(json => {
@@ -112,6 +120,36 @@ let make = _children => {
       />
       <br />
       answerFields
+      <select
+        onChange={
+          event =>
+            self.send(
+              SetPollSecurityType(
+                event->ReactEvent.Form.target##value
+                |> Types.PollSecurityType.fromString,
+              ),
+            )
+        }
+        value={Types.PollSecurityType.toString(self.state.pollSecurityType)}>
+        {
+          ReasonReact.array(
+            Types.PollSecurityType.toList
+            |> List.map((pollSecurityType: option(Types.pollSecurityType)) =>
+                 <option
+                   value={Types.PollSecurityType.toString(pollSecurityType)}>
+                   {
+                     ReasonReact.string(
+                       Types.PollSecurityType.toReadableString(
+                         pollSecurityType,
+                       ),
+                     )
+                   }
+                 </option>
+               )
+            |> Array.of_list,
+          )
+        }
+      </select>
       <button onClick={_event => self.send(SubmitPoll)}>
         {ReasonReact.string("Submit")}
       </button>
