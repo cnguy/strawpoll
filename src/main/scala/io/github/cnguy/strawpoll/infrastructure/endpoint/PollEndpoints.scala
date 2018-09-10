@@ -33,10 +33,8 @@ class PollEndpoints[F[_]: Effect] extends Http4sDsl[F] {
       case req @ POST -> Root / "polls" => {
         for {
           pollRequest <- req.as[PollRequest]
-          saved <- pollService.createPoll(
-            pollRequest.toPoll
-          )
-          _ <- answerService.createMultipleAnswersForPoll(saved.id.get, pollRequest.answers)
+          saved <- pollService.create(pollRequest.toPoll)
+          _ <- answerService.createBatch(saved.id.get, pollRequest.answers)
           resp <- Ok(saved.asJson)
         } yield resp
       }

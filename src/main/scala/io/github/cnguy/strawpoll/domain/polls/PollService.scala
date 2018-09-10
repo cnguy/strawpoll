@@ -11,7 +11,7 @@ class PollService[F[_]](pollRepo: PollRepositoryAlgebra[F]) {
   def get(id: Long)(implicit M: Monad[F]): EitherT[F, PollNotFoundError.type, Poll] =
     EitherT.fromOptionF(pollRepo.get(id), PollNotFoundError)
 
-  def createPoll(poll: Poll): F[Poll] =
+  def create(poll: Poll): F[Poll] =
     pollRepo.create(poll)
 
   def delete(id: Long)(implicit M: Monad[F]): F[Unit] =
