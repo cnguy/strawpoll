@@ -6,4 +6,6 @@ final case class Answer(
     rank: Int,
     count: Int = 0,
     id: Option[Long] = None
-)
+) {
+  def vote: Answer = this.copy(count = count + 1)
+}

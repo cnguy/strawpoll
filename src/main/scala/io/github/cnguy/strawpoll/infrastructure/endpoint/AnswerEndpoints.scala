@@ -51,7 +51,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
                     _ <- ipAddressService.create(IpAddress(id, req.remoteAddr.getOrElse("null")))
                     _ = println(req.remoteAddr)
                     innerResp <- answer match {
-                      case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
+                      case Some(a) => Ok(a.vote.asJson)
                       case None => NotFound("The answer was not found.")
                     }
                   } yield innerResp
@@ -64,7 +64,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
                 answer <- answerService.vote(id)
                 _ = println("BrowserCookieCheck")
                 resp <- answer match {
-                  case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
+                  case Some(a) => Ok(a.vote.asJson)
                   case None => NotFound("The answer was not found.")
                 }
               } yield resp
@@ -73,7 +73,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
               for {
                 answer <- answerService.vote(id)
                 resp <- answer match {
-                  case Some(a) => Ok(a.copy(count = a.count + 1).asJson)
+                  case Some(a) => Ok(a.vote.asJson)
                   case None => NotFound()
                 }
               } yield resp
