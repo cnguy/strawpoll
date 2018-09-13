@@ -32,7 +32,6 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
       pollService: PollService[F],
       ipAddressService: IpAddressService[F]): HttpService[F] =
     HttpService[F] {
-      // TODO: Clean up this mess!
       case req @ PUT -> Root / "answers" / LongVar(id) =>
         for {
           answer <- answerService.get(id).value
@@ -50,10 +49,7 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
                     answer <- answerService.vote(id)
                     _ <- ipAddressService.create(IpAddress(id, req.remoteAddr.getOrElse("null")))
                     _ = println(req.remoteAddr)
-                    innerResp <- answer match {
-                      case Some(a) => Ok(a.vote.asJson)
-                      case None => NotFound("The answer was not found.")
-                    }
+                    innerResp <- Ok(answer.get.vote.asJson)
                   } yield innerResp
                 }
               } yield resp
@@ -63,21 +59,14 @@ class AnswerEndpoints[F[_]: Effect] extends Http4sDsl[F] {
               for {
                 answer <- answerService.vote(id)
                 _ = println("BrowserCookieCheck")
-                resp <- answer match {
-                  case Some(a) => Ok(a.vote.asJson)
-                  case None => NotFound("The answer was not found.")
-                }
+                resp <- Ok(answer.get.vote.asJson)
               } yield resp
             }
-            case _ => {
+            case None =>
               for {
                 answer <- answerService.vote(id)
-                resp <- answer match {
-                  case Some(a) => Ok(a.vote.asJson)
-                  case None => NotFound()
-                }
+                resp <- Ok(answer.get.vote.asJson)
               } yield resp
-            }
           }
         } yield resp
     }
