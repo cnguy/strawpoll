@@ -80,6 +80,6 @@ let make = (~id: int, _children) => {
           {ReasonReact.string("Vote")}
         </button>
       </div>;
-    | None => ReasonReact.string("Poll not found.")
+    | None => <NotFound />
     },
 };

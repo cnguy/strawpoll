@@ -29,15 +29,18 @@ module Router = ReRoute.CreateRouter(RouterConfig);
 let make = _children => {
   ...component,
   render: _self =>
-    <Router.Container>
-      ...{
-           (~currentRoute) =>
-             switch (currentRoute) {
-             | RouterConfig.NewPoll => <NewPoll />
-             | RouterConfig.Poll(id) => <Poll id />
-             | RouterConfig.PollResults(id) => <PollResults id />
-             | RouterConfig.NotFound => ReasonReact.string("NotFound")
-             }
-         }
-    </Router.Container>,
+    <div className="container">
+      <Header />
+      <Router.Container>
+        ...{
+             (~currentRoute) =>
+               switch (currentRoute) {
+               | RouterConfig.NewPoll => <NewPoll />
+               | RouterConfig.Poll(id) => <Poll id />
+               | RouterConfig.PollResults(id) => <PollResults id />
+               | RouterConfig.NotFound => <NotFound />
+               }
+           }
+      </Router.Container>
+    </div>,
 };

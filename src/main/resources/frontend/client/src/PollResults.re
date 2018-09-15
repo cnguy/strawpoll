@@ -46,6 +46,6 @@ let make = (~id: int, _children) => {
           {ReasonReact.array(Array.of_list(answers))}
         </ul>
       </div>;
-    | None => ReasonReact.string("Poll not found.")
+    | None => <NotFound />
     },
 };
