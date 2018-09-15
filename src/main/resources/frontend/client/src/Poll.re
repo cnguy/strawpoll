@@ -22,7 +22,11 @@ let make = (~id: int, _children) => {
   reducer: (action, state) =>
     switch (action) {
     | SetPoll(poll) => ReasonReact.Update({...state, poll})
-    | Vote((optionId: int)) => ReasonReact.Update({...state, optionId})
+    | Vote((optionId: int)) =>
+      ReasonReact.Update({
+        ...state,
+        optionId: optionId !== state.optionId ? optionId : 0 /* Undo check */
+      })
     | SetIsLoading(isLoading) => ReasonReact.Update({...state, isLoading})
     | Submit =>
       if (state.optionId !== 0) {
